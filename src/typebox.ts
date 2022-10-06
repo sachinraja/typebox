@@ -223,9 +223,11 @@ export type IntersectProperties<T extends readonly TObject[]> = {
   [K in keyof T]: T[K] extends TObject<infer P> ? P : {}
 }
 
-export interface TIntersect<T extends TObject[] = TObject[]> extends TObject {
+export interface Intersect<T extends TSchema[]> extends TSchema {
+  [Kind]: 'Intersect'
   static: IntersectReduce<unknown, IntersectEvaluate<T, this['params']>>
-  properties: IntersectReduce<unknown, IntersectProperties<T>>
+  allOf: [...T]
+  unevaluatedProperties?: boolean
 }
 
 // --------------------------------------------------------------------------
