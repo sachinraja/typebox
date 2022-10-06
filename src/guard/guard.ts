@@ -155,6 +155,15 @@ export namespace TypeGuard {
     )
   }
 
+  /** Returns true if the given schema is TInteger */
+  export function TIntersect(schema: unknown): schema is Types.TIntersect {
+    if (!(IsObject(schema) && schema[Types.Kind] === 'Intersect' && IsArray(schema.allOf) && IsOptionalString(schema.$id) && IsOptionalBoolean(schema.unevaluatedProperties))) return false
+    for (const inner of schema.allOf) {
+      if (!TSchema(inner)) return false
+    }
+    return true
+  }
+
   /** Returns true if the given schema is TLiteral */
   export function TLiteral(schema: unknown): schema is Types.TLiteral {
     return IsObject(schema) && schema[Types.Kind] === 'Literal' && IsOptionalString(schema.$id) && (IsString(schema.const) || IsNumber(schema.const) || IsBoolean(schema.const))
@@ -333,6 +342,7 @@ export namespace TypeGuard {
       TConstructor(schema) ||
       TFunction(schema) ||
       TInteger(schema) ||
+      TIntersect(schema) ||
       TLiteral(schema) ||
       TNever(schema) ||
       TNull(schema) ||

@@ -83,6 +83,7 @@ export type TAnySchema =
   | TEnum
   | TFunction
   | TInteger
+  | TIntersect
   | TLiteral
   | TNull
   | TNumber
@@ -223,11 +224,14 @@ export type IntersectProperties<T extends readonly TObject[]> = {
   [K in keyof T]: T[K] extends TObject<infer P> ? P : {}
 }
 
-export interface Intersect<T extends TSchema[]> extends TSchema {
+export interface IntersectOptions extends SchemaOptions {
+  unevaluatedProperties?: boolean
+}
+
+export interface TIntersect<T extends TSchema[] = TSchema[]> extends TSchema, IntersectOptions {
   [Kind]: 'Intersect'
   static: IntersectReduce<unknown, IntersectEvaluate<T, this['params']>>
   allOf: [...T]
-  unevaluatedProperties?: boolean
 }
 
 // --------------------------------------------------------------------------
@@ -660,31 +664,35 @@ export class TypeBuilder {
   }
 
   /** Creates a intersect type. */
-  public Intersect<T extends TObject[]>(objects: [...T], options: ObjectOptions = {}): TIntersect<T> {
-    const isOptional = (schema: TSchema) => (schema[Modifier] && schema[Modifier] === 'Optional') || schema[Modifier] === 'ReadonlyOptional'
-    const [required, optional] = [new Set<string>(), new Set<string>()]
-    for (const object of objects) {
-      for (const [key, schema] of Object.entries(object.properties)) {
-        if (isOptional(schema)) optional.add(key)
-      }
-    }
-    for (const object of objects) {
-      for (const key of Object.keys(object.properties)) {
-        if (!optional.has(key)) required.add(key)
-      }
-    }
-    const properties = {} as Record<string, any>
-    for (const object of objects) {
-      for (const [key, schema] of Object.entries(object.properties)) {
-        properties[key] = properties[key] === undefined ? schema : { [Kind]: 'Union', anyOf: [properties[key], { ...schema }] }
-      }
-    }
-    if (required.size > 0) {
-      return this.Create({ ...options, [Kind]: 'Object', type: 'object', properties, required: [...required] })
-    } else {
-      return this.Create({ ...options, [Kind]: 'Object', type: 'object', properties })
-    }
+  public Intersect<T extends TSchema[]>(allOf: [...T], options: IntersectOptions = {}): TIntersect<T> {
+    return this.Create({ ...options, [Kind]: 'Intersect', allOf })
   }
+
+  // public Intersect<T extends TObject[]>(objects: [...T], options: ObjectOptions = {}): TIntersect<T> {
+  //   const isOptional = (schema: TSchema) => (schema[Modifier] && schema[Modifier] === 'Optional') || schema[Modifier] === 'ReadonlyOptional'
+  //   const [required, optional] = [new Set<string>(), new Set<string>()]
+  //   for (const object of objects) {
+  //     for (const [key, schema] of Object.entries(object.properties)) {
+  //       if (isOptional(schema)) optional.add(key)
+  //     }
+  //   }
+  //   for (const object of objects) {
+  //     for (const key of Object.keys(object.properties)) {
+  //       if (!optional.has(key)) required.add(key)
+  //     }
+  //   }
+  //   const properties = {} as Record<string, any>
+  //   for (const object of objects) {
+  //     for (const [key, schema] of Object.entries(object.properties)) {
+  //       properties[key] = properties[key] === undefined ? schema : { [Kind]: 'Union', anyOf: [properties[key], { ...schema }] }
+  //     }
+  //   }
+  //   if (required.size > 0) {
+  //     return this.Create({ ...options, [Kind]: 'Object', type: 'object', properties, required: [...required] })
+  //   } else {
+  //     return this.Create({ ...options, [Kind]: 'Object', type: 'object', properties })
+  //   }
+  // }
 
   /** Creates a keyof type */
   public KeyOf<T extends TObject>(object: T, options: SchemaOptions = {}): TKeyOf<T> {

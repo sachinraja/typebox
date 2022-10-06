@@ -2,10 +2,10 @@ import { TypeGuard } from '@sinclair/typebox/guard'
 import { Type } from '@sinclair/typebox'
 import { Assert } from '../assert/index'
 
-describe('type/guard/TUnion', () => {
-  it('should guard for TUnion', () => {
-    const R = TypeGuard.TUnion(
-      Type.Union([
+describe('type/guard/TIntersect', () => {
+  it('should guard for TIntersect', () => {
+    const R = TypeGuard.TIntersect(
+      Type.Intersect([
         Type.Object({
           x: Type.Number(),
         }),
@@ -16,14 +16,14 @@ describe('type/guard/TUnion', () => {
     )
     Assert.equal(R, true)
   })
-  it('should not guard for TUnion', () => {
-    const R = TypeGuard.TUnion(null)
+  it('should not guard for TIntersect', () => {
+    const R = TypeGuard.TIntersect(null)
     Assert.equal(R, false)
   })
-  it('should guard for TUnion with invalid $id', () => {
-    const R = TypeGuard.TUnion(
+  it('should guard for TIntersect with invalid $id', () => {
+    const R = TypeGuard.TIntersect(
       // @ts-ignore
-      Type.Union(
+      Type.Intersect(
         [
           Type.Object({
             x: Type.Number(),
@@ -33,15 +33,16 @@ describe('type/guard/TUnion', () => {
           }),
         ],
         {
+          // @ts-ignore
           $id: 1,
         },
       ),
     )
     Assert.equal(R, false)
   })
-  it('should not guard for TUnion with invalid variant', () => {
-    const R = TypeGuard.TUnion(
-      Type.Union([
+  it('should not guard for TIntersect with invalid variant', () => {
+    const R = TypeGuard.TIntersect(
+      Type.Intersect([
         Type.Object({
           x: Type.Number(),
         }),
@@ -50,9 +51,10 @@ describe('type/guard/TUnion', () => {
     )
     Assert.equal(R, false)
   })
-  it('should not guard for TUnion with invalid object variant', () => {
-    const R = TypeGuard.TUnion(
-      Type.Union([
+
+  it('should not guard for TIntersect with invalid object variant', () => {
+    const R = TypeGuard.TIntersect(
+      Type.Intersect([
         Type.Object({
           x: Type.Number(),
         }),

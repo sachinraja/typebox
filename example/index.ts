@@ -1,32 +1,80 @@
+import { Type } from '@sinclair/typebox'
+import { TypeGuard } from '@sinclair/typebox/guard'
 import * as Types from '@sinclair/typebox'
-// export type IntersectReduce<I extends unknown, T extends readonly any[]> = T extends [infer A, ...infer B] ? IntersectReduce<I & A, B> : I extends object ? I : {}
 
-// // note: rename to IntersectStatic<T, P> in next minor release
-// export type IntersectEvaluate<T extends readonly TSchema[], P extends unknown[]> = { [K in keyof T]: T[K] extends TSchema ? Static<T[K], P> : never }
+export namespace TypeEvaluator {
+  export function Any(schema: Types.TAny) {}
+  export function Array(schema: Types.TArray) {}
+  export function Boolean(schema: Types.TBoolean) {}
+  export function Constructor(schema: Types.TConstructor) {}
+  export function Function(schema: Types.TFunction) {}
+  export function Integer(schema: Types.TInteger) {}
+  export function Literal(schema: Types.TLiteral) {}
+  export function Null(schema: Types.TNull) {}
+  export function Number(schema: Types.TNumber) {}
+  export function Object(schema: Types.TObject) {}
+  export function Promise(schema: Types.TPromise) {}
+  export function Record(schema: Types.TRecord) {}
+  export function Ref(schema: Types.TRef) {}
+  export function Self(schema: Types.TSelf) {}
+  export function String(schema: Types.TString) {}
+  export function Tuple(schema: Types.TTuple) {}
+  export function Undefined(schema: Types.TUndefined) {}
+  export function Uint8Array(schema: Types.TUint8Array) {}
+  export function Union(schema: Types.TUnion) {}
+  export function Unknown(schema: Types.TUnknown) {}
+  export function Void(schema: Types.TVoid) {}
 
-// export type IntersectProperties<T extends readonly TObject[]> = {
-//   [K in keyof T]: T[K] extends TObject<infer P> ? P : {}
-// }
-
-// export interface TIntersect<T extends TObject[] = TObject[]> extends TObject {
-//   static: IntersectReduce<unknown, IntersectEvaluate<T, this['params']>>
-//   properties: IntersectReduce<unknown, IntersectProperties<T>>
-// }
-
-export interface Intersect2<T extends Types.TSchema[]> extends Types.TSchema {
-  [Types.Kind]: 'Intersect2'
-  static: Types.IntersectReduce<unknown, Types.IntersectEvaluate<T, this['params']>>
-  allOf: [...T]
-  unevaluatedProperties?: boolean
-}
-
-export class TypeBuilder extends Types.TypeBuilder {
-  public Intersect2<T extends Types.TSchema[]>(allOf: [...T], options: Types.SchemaOptions = {}): Intersect2<T> {
-    return this.Create({ ...options, [Types.Kind]: 'Intersect2', allOf })
+  export function Evaluate<T extends Types.TSchema>(schema: Types.TSchema) {
+    if (TypeGuard.TAny(schema)) {
+      return Any(schema)
+    } else if (TypeGuard.TArray(schema)) {
+      return Array(schema)
+    } else if (TypeGuard.TBoolean(schema)) {
+      return Boolean(schema)
+    } else if (TypeGuard.TConstructor(schema)) {
+      return Constructor(schema)
+    } else if (TypeGuard.TFunction(schema)) {
+      return Function(schema)
+    } else if (TypeGuard.TInteger(schema)) {
+      return Integer(schema)
+    } else if (TypeGuard.TLiteral(schema)) {
+      return Literal(schema)
+    } else if (TypeGuard.TNull(schema)) {
+      return Null(schema)
+    } else if (TypeGuard.TNumber(schema)) {
+      return Number(schema)
+    } else if (TypeGuard.TObject(schema)) {
+      return Object(schema)
+    } else if (TypeGuard.TPromise(schema)) {
+      return Promise(schema)
+    } else if (TypeGuard.TRecord(schema)) {
+      return Record(schema)
+    } else if (TypeGuard.TRef(schema)) {
+      return Ref(schema)
+    } else if (TypeGuard.TSelf(schema)) {
+      return Self(schema)
+    } else if (TypeGuard.TString(schema)) {
+      return String(schema)
+    } else if (TypeGuard.TTuple(schema)) {
+      return Tuple(schema)
+    } else if (TypeGuard.TUndefined(schema)) {
+      return Undefined(schema)
+    } else if (TypeGuard.TUint8Array(schema)) {
+      return Uint8Array(schema)
+    } else if (TypeGuard.TUnion(schema)) {
+      return Union(schema)
+    } else if (TypeGuard.TUnknown(schema)) {
+      return Unknown(schema)
+    } else if (TypeGuard.TVoid(schema)) {
+      return Void(schema)
+    } else {
+      throw Error(`Structural: Unknown left operand '${left[Types.Kind]}'`)
+    }
   }
 }
 
-const Type = new TypeBuilder()
+
 
 const A = Type.Object({ a: Type.Number() })
 const B = Type.Object({ b: Type.Number() })
@@ -38,14 +86,16 @@ const E = Type.String()
 // const G = Type.Object({ g: Type.Number() })
 // const H = Type.Object({ h: Type.Number() })
 
-const I = Type.Intersect2([
+
+
+const I = Type.Intersect([
   Type.Union([A, B]),
-  Type.Union([C, D, E])
+  Type.Union([Type.Number()])
 ])
 
-function Evaluate<T extends Types.TSchema>(schema: T) {
 
-}
+type X = ({ a: number } | { b: number }) & number
+type Y = { a?: number, b?: number } & number
 
 console.log(JSON.stringify(I, null, 2))
 
